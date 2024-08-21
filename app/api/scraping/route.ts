@@ -1,109 +1,131 @@
-const { chromium } = require('playwright');
-const { createObjectCsvWriter } = require('csv-writer');
 
-// script start
-async function run() {
-  const url = 'https://news.ycombinator.com/jobs'; // URL for Hacker News jobs page
+import { chromium, Browser, Page } from 'playwright';
+import { createObjectCsvWriter } from 'csv-writer';
+import path from 'path';
+import fs from 'fs';
+import { NextResponse } from 'next/server';
 
-  await fetchHackerNewsData(url);
+type JobPost = {
+  title: string;
+  url: string;
+  time: string;
+};
+
+type Data = {
+  message: string;
+  fileName?: string;
+  error?: string;
+};
+
+export async function POST(req: Request, res: NextResponse<Data>) {
+
+
+//   const url = 'https://news.ycombinator.com/jobs';
+const body = await req.json();
+const { url } = body;
+console.log("url",url)
+
+  try {
+    const jobs = await fetchHackerNewsData(url);
+    const fileName = path.resolve(process.cwd(), 'hacker_news_software_engineering_jobs.csv');
+    await saveToCsv(jobs, fileName);
+
+    return NextResponse.json({ message: 'Jobs fetched and saved successfully', fileName },{status:200})
+} catch (error) {
+    console.error('Error fetching Hacker News jobs:', error);
+    
+    return NextResponse.json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error'},{status:500})
+  }
 }
 
-async function fetchHackerNewsData(url) {
-  // create browser
-  const browser = await chromium.launch({ headless: false });
+async function fetchHackerNewsData(url: string): Promise<JobPost[]> {
+  const browser: Browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
-  const page = await context.newPage();
+  const page: Page = await context.newPage();
 
-  // go to the desired page
-  console.log(`Going to page: ${url}....`);
+  console.log(`Navigating to page: ${url}....`);
   await page.goto(url);
 
-  // save the articles
   const articles = await getArticles(page);
 
-  // filter for software engineering jobs
   const filteredArticles = articles.filter(article => 
     /software|engineer|developer|programmer|backend|frontend|full stack|javascript/i.test(article.title)
   );
 
-  // save articles to a CSV file
-  console.log("Creating CSV file....");
-  await saveToCsv(filteredArticles, 'hacker_news_software_engineering_jobs.csv');
-
-
   await browser.close();
+  return filteredArticles;
 }
 
-async function getArticles(page) {
-    let articles = [];
-    let shouldContinue = true;
-  
-    while (shouldContinue) {
-      await page.waitForTimeout(1000);
-  
-      const jobPosts = await page.evaluate(() => {
-        const results = [];
-        const items = document.querySelectorAll('.athing');
-  console.log(items)
-        items.forEach(item => {
-          const titleElement = item.querySelector('.titleline > a');
-          const title = titleElement ? titleElement.innerText : 'No title';
-          const url = titleElement ? titleElement.href : 'Unknown link';
-  
-          const subtextElement = item.nextElementSibling.querySelector('.subtext');
-          const timeElement = subtextElement.querySelector('.age');
-          const time = timeElement ? timeElement.innerText : 'Unknown time';
-  
-          results.push({ title, url, time });
-        });
-  
-        return results;
+async function getArticles(page: Page): Promise<JobPost[]> {
+  const articles: JobPost[] = [];
+  let shouldContinue = true;
+
+  while (shouldContinue) {
+    await page.waitForTimeout(1000);
+
+    const jobPosts: JobPost[] = await page.evaluate(() => {
+      const results: JobPost[] = [];
+      const items = document.querySelectorAll('.athing');
+
+      items.forEach(item => {
+        const titleElement = item.querySelector('.titleline > a') as HTMLAnchorElement | null;
+        const title = titleElement ? titleElement.innerText : 'No title';
+        const url = titleElement ? titleElement.href : 'Unknown link';
+
+        const subtextElement = item.nextElementSibling?.querySelector('.subtext');
+        const timeElement = subtextElement?.querySelector('.age') as HTMLAnchorElement | null;
+        const time = timeElement ? timeElement.innerText : 'Unknown time';
+
+        results.push({ title, url, time });
       });
-  console.log(jobPosts)
-      // Check if any job post is older than 7 days
-      if (jobPosts.some(post => !isPostedWithinLastWeek(post.time))) {
-        shouldContinue = false;
-      }
-  
-      articles.push(...jobPosts);
-  
-      // Check if there is a "more" button
-      const moreButton = await page.$('a.morelink');
-      if (moreButton && shouldContinue) {
-        await moreButton.click();
-        await page.waitForTimeout(2000); 
-      } else {
-        shouldContinue = false;
-      }
+
+      return results;
+    });
+
+    if (jobPosts.some(post => !isPostedWithinLastWeek(post.time))) {
+      shouldContinue = false;
     }
-  
-    return articles;
+
+    articles.push(...jobPosts);
+
+    const moreButton = await page.$('a.morelink');
+    if (moreButton && shouldContinue) {
+      await moreButton.click();
+      await page.waitForTimeout(2000); 
+    } else {
+      shouldContinue = false;
+    }
   }
 
-async function saveToCsv(data, fileName) {
-  const csvWriter = createCsvWriter({
+  return articles;
+}
+
+function isPostedWithinLastWeek(time: string): boolean {
+  return !/(\d+\s+days?\s+ago)/i.test(time);
+}
+
+async function saveToCsv(data: JobPost[], fileName: string): Promise<void> {
+  const csvWriter = createObjectCsvWriter({
     path: fileName,
     header: [
       { id: 'title', title: 'Title' },
-      { id: 'url', title: 'URL' }
-    ]
+      { id: 'url', title: 'URL' },
+      { id: 'time', title: 'Time' } 
+    ],
+    append: fs.existsSync(fileName) 
   });
 
-  // organizing data with headers
   const organizedData = data.map(item => ({
     title: item.title,
-    url: item.url
+    url: item.url,
+    time: item.time
   }));
 
-  csvWriter.writeRecords(organizedData)
-    .then(() => {
-      console.log(`Data saved to ${fileName}.`);
-    })
-    .catch(err => {
-      console.error('Error writing to CSV file:', err);
-    });
+  try {
+    await csvWriter.writeRecords(organizedData);
+    console.log(`Data saved to ${fileName}.`);
+  } catch (err) {
+    console.error('Error writing to CSV file:', err);
+    throw err;
+  }
 }
-
-(async () => {
-  await run();
-})();

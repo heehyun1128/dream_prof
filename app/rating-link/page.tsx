@@ -9,7 +9,7 @@ const SubmitProfessorRatingLink: React.FC = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post("/api/submit-link", { link });
+      const response = await axios.post("/api/scraping", { url:link });
       console.log(response.data); 
     } catch (error) {
       console.error("Error submitting link:", error); 
