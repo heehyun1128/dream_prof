@@ -125,7 +125,7 @@ const Hero: React.FC = () => {
           </Button>
         </div>
         <div>
-          <Button onClick={() => router.push("/rating-link")}>
+          <Button onClick={() => router.push("/view-review-trend")}>
             View a Professor&apos;s review Trend
           </Button>
         </div>
