@@ -4,30 +4,31 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 import Loader from "@/components/loader";
+import { useRouter } from "next/navigation";
 
 type Message = {
   role: string;
   content: string;
 };
 
-
 const Hero: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [isChatting, setIsChatting]=useState<boolean>(false)
+  const [isChatting, setIsChatting] = useState<boolean>(false);
 
+  const router = useRouter();
   const searchProfessor = async () => {
     try {
       setMessages((messages) => [
         ...messages,
-        { role: "user", content: searchTerm }
+        { role: "user", content: searchTerm },
       ]);
       setLoading(true);
-      setSearchTerm("")
-      setIsChatting(true)
+      setSearchTerm("");
+      setIsChatting(true);
       // Sending chat history to the server
       const res = await axios.post(
         "/api/chat",
@@ -38,14 +39,13 @@ const Hero: React.FC = () => {
       const { data } = res;
 
       // Update the messages state with the assistant's response
-     
+
       setMessages((messages) => [
         ...messages,
-       
+
         { role: "assistant", content: res.data }, // Adjust this line according to your API response structure
       ]);
       setLoading(false);
-      
     } catch (error) {
       console.error("Error fetching data from the server:", error);
     }
@@ -119,7 +119,17 @@ const Hero: React.FC = () => {
         </div>
       </motion.div>
       <div>
-      <AnimatePresence>
+        <div>
+          <Button onClick={() => router.push("/rating-link")}>
+            Submit a Professor Review Link
+          </Button>
+        </div>
+        <div>
+          <Button onClick={() => router.push("/rating-link")}>
+            View a Professor&apos;s review Trend
+          </Button>
+        </div>
+        <AnimatePresence>
           {messages.map((chat, index) => (
             <motion.div
               key={index}
@@ -159,42 +169,45 @@ const Hero: React.FC = () => {
             <Loader />
           </motion.div>
         )}
-</div>
+      </div>
 
-   {!isChatting &&  <div >
-       {/* Hero Image */}
-       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.6, duration: 0.5 }}
-        className="mt-12 sm:mt-20 p-2 bg-white bg-opacity-60 rounded-3xl shadow-6xl relative overflow-hidden backdrop-filter backdrop-blur-3xl"
-        style={{
-          boxShadow: "0 0 50px 2px rgba(17, 38, 107, 0.6)",
-        }}
-      >
-        <div className="absolute inset-0 bg-primary opacity-30 filter blur-3xl"></div>
-        <video
-          src="https://videos.pexels.com/video-files/25744128/11904108_2560_1440_24fps.mp4"
-          width={1200}
-          height={600}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="rounded-2xl relative z-10 w-full h-auto object-cover"
-        />
-      </motion.div>
+      {!isChatting && (
+        <div>
+          {/* Hero Image */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="mt-12 sm:mt-20 p-2 bg-white bg-opacity-60 rounded-3xl shadow-6xl relative overflow-hidden backdrop-filter backdrop-blur-3xl"
+            style={{
+              boxShadow: "0 0 50px 2px rgba(17, 38, 107, 0.6)",
+            }}
+          >
+            <div className="absolute inset-0 bg-primary opacity-30 filter blur-3xl"></div>
+            <video
+              src="https://videos.pexels.com/video-files/25744128/11904108_2560_1440_24fps.mp4"
+              width={1200}
+              height={600}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="rounded-2xl relative z-10 w-full h-auto object-cover"
+            />
+          </motion.div>
 
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.5 }}
-        className="text-charcoal-black text-base sm:text-lg mt-6"
-      >
-        Harnessing advanced AI to generate comprehensive professor evaluations
-        from student feedback, optimizing your course selection process.
-      </motion.p>
-     </div>}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+            className="text-charcoal-black text-base sm:text-lg mt-6"
+          >
+            Harnessing advanced AI to generate comprehensive professor
+            evaluations from student feedback, optimizing your course selection
+            process.
+          </motion.p>
+        </div>
+      )}
     </main>
   );
 };
