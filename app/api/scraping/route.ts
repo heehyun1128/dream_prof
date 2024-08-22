@@ -127,7 +127,7 @@ async function saveToCsv(data: JobPost[], fileName: string): Promise<void> {
   try {
     await csvWriter.writeRecords(organizedData);
     console.log(`Data saved to ${fileName}.`);
-    await axios.get(`${process.env.BACKEND_URL}/auto-embedding`)
+    await axios.get(`${process.env.BACKEND_URL}/api/auto-embedding`)
   } catch (err) {
     console.error('Error writing to CSV file:', err);
     throw err;

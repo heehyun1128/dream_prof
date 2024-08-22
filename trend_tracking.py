@@ -1,4 +1,6 @@
 from collections import defaultdict
+import matplotlib
+
 import matplotlib.pyplot as plot_graph
 import csv
 from io import StringIO
@@ -7,6 +9,8 @@ from openai import OpenAI
 from datetime import datetime
 
 from flask import Blueprint, Response
+
+matplotlib.use('Agg')
 
 sentiment_routes = Blueprint('sentiment', __name__)
 
@@ -52,21 +56,29 @@ def get_data_object():
 
 
 def track_trends(reviews):
-    sentiment_trend=defaultdict(lambda: {"Positive": 0, "Neutral": 0, "Negative": 0})
+    sentiment_trend=defaultdict(lambda: defaultdict(lambda: {"Positive": 0, "Neutral": 0, "Negative": 0}))
     
     for review in reviews:
         sentiment=analyze_sentiment(review["review"])
         date=review["date"]
-        sentiment_trend[date][sentiment]+=1
+        professor=review["professor"]
+        sentiment_trend[professor][date][sentiment] += 1
     return sentiment_trend
 
 
 
-def create_trend_graph(trends):
-    dates = sorted(trends.keys())
-    positive = [trends[date]["Positive"] for date in dates]
-    neutral = [trends[date]["Neutral"] for date in dates]
-    negative = [trends[date]["Negative"] for date in dates]
+def create_trend_graph(trends, professor_name):
+    if professor_name not in trends:
+        print(f"No data available for professor: {professor_name}")
+        return
+    
+    professor_trends = trends[professor_name]
+    
+    dates = sorted(professor_trends.keys())
+    
+    positive = [professor_trends[date]["Positive"] for date in dates]
+    neutral = [professor_trends[date]["Neutral"] for date in dates]
+    negative = [professor_trends[date]["Negative"] for date in dates]
     
     plot_graph.figure(figsize=(12,6))
     plot_graph.plot(dates, positive, label="Positive", color="green")
@@ -78,18 +90,20 @@ def create_trend_graph(trends):
     # plot_graph.legend()
     plot_graph.xticks(rotation=45)
     plot_graph.tight_layout()
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    file_with_timestamp = f'sentiment_graph_{timestamp}.png'
-    plot_graph.savefig(file_with_timestamp)
+    # timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    professor_name = professor_name.strip()
+    file_path = os.path.join('public', f'{professor_name}_sentiment_graph.png')
+   
+    plot_graph.savefig(file_path)
     plot_graph.close()
 
 
 # create_trend_graph(trend_over_time)
-@sentiment_routes.route('/sentiment-trend',methods=['GET'])
-def sentiment_trend_route():
+@sentiment_routes.route('/sentiment-trend/<string:professor_name>',methods=['GET'])
+def sentiment_trend_route(professor_name):
     reviews = get_data_object()
     trend_over_time = track_trends(reviews)
-    img = create_trend_graph(trend_over_time)
+    img = create_trend_graph(trend_over_time, professor_name)
     return Response(img, mimetype='image/png')
 
 if __name__ == "__main__":
