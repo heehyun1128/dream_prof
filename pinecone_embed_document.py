@@ -1,20 +1,49 @@
-from dotenv import load_dotenv
-
 import os
 import asyncio
-
-import openai 
+import csv
 import json
+from dotenv import load_dotenv
+import openai
 from pinecone import Pinecone
+from flask import Blueprint, jsonify
 
 load_dotenv()
 
+chunk_and_embed_routes = Blueprint('chunk_and_embed', __name__)
 # chunking
 async def chunk_and_embed_document():
     try:
+        csv_file = 'hacker_news_software_engineering_jobs.csv'
+        processed_data = []
+        with open(csv_file,mode='r',newline="",encoding="UTF-8") as file:
+            reader=csv.DictReader(file)
+            for row in reader:
+                title=row['Title']
+                url=row['URL']
+                
+                res = openai.embeddings.create(
+                    input=title,
+                    model="text-embedding-3-small"
+                )
+                embedding = res.data[0].embedding
+                
+                processed_data.append({
+                    "values": embedding,
+                    "id": url,
+                    "metadata": {
+                        "title": title,
+                        "url":url
+                    },
+                })
+                print("processed_data",processed_data)
+                pc = Pinecone(api_key=os.environ.get("PINECONE_API_KEY"))
+                index = pc.Index("rate-my-professor")
+                index.upsert(vectors=processed_data,namespace="ns1")
+            
+            
         data=json.load(open("reviews.json"))
         print(data)
-        processed_data=[]
+        
         
         for review in data["reviews"]:
             res=openai.embeddings.create( 
@@ -49,4 +78,8 @@ async def chunk_and_embed_document():
 if __name__ == "__main__":
     asyncio.run(chunk_and_embed_document())
 
+@chunk_and_embed_routes.route('/auto-embedding', methods=['GET'])
+def trigger_chunking():
+    asyncio.run(chunk_and_embed_document())
+    return jsonify({"message": "Chunking and embedding started"}), 200
 

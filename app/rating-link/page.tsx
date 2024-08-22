@@ -3,16 +3,21 @@ import React, { useState } from "react";
 import axios from "axios";
 
 const SubmitProfessorRatingLink: React.FC = () => {
-  const [link, setLink] = useState("");
+  const [link, setLink] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
+      setLink("")
+      setLoading(true)
       const response = await axios.post("/api/scraping", { url:link });
-      console.log(response.data); 
+      
     } catch (error) {
       console.error("Error submitting link:", error); 
+    }finally{
+      setLoading(false)
     }
   };
 

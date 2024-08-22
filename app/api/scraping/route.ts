@@ -4,6 +4,8 @@ import { createObjectCsvWriter } from 'csv-writer';
 import path from 'path';
 import fs from 'fs';
 import { NextResponse } from 'next/server';
+import axios from 'axios';
+
 
 type JobPost = {
   title: string;
@@ -121,9 +123,11 @@ async function saveToCsv(data: JobPost[], fileName: string): Promise<void> {
     time: item.time
   }));
 
+  
   try {
     await csvWriter.writeRecords(organizedData);
     console.log(`Data saved to ${fileName}.`);
+    await axios.get(`${process.env.BACKEND_URL}/auto-embedding`)
   } catch (err) {
     console.error('Error writing to CSV file:', err);
     throw err;

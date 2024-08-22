@@ -56,7 +56,12 @@ export async function POST(req: Request) {
     apiKey: key,
   });
 
-  const index = pc.index("rate-my-professor").namespace("ns2");
+  const indexNames = ["ns1", "ns2"];
+  const indexQueries = indexNames.map(namespace => 
+    pc.index("rate-my-professor").namespace(namespace)
+  );
+
+  // const index = pc.index("rate-my-professor").namespace("ns2");
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
@@ -66,15 +71,23 @@ export async function POST(req: Request) {
     input: text,
   });
 
-  const results = await index.query({
-    topK: 3,
-    includeMetadata: true,
-    vector: embedding.data[0].embedding,
-  });
+  // const results = await index.query({
+  //   topK: 3,
+  //   includeMetadata: true,
+  //   vector: embedding.data[0].embedding,
+  // });
+  const results = await Promise.all(indexQueries.map(index => 
+    index.query({
+      topK: 3,
+      includeMetadata: true,
+      vector: embedding.data[0].embedding,
+    })
+  ));
 
   let resultString =
     "\n\nReturned results from vector db (done automatically):";
-  results.matches.forEach((match) => {
+  results.forEach((res,index) => {
+     res.matches.forEach((match) => {
     if (!match.metadata) {
       throw new Error("no metadata");
     }
@@ -86,6 +99,19 @@ export async function POST(req: Request) {
     \n\n
     `;
   });
+  });
+  // results.matches.forEach((match) => {
+  //   if (!match.metadata) {
+  //     throw new Error("no metadata");
+  //   }
+  //   resultString += `\n
+  //   Professor: ${match.id}
+  //   Review: ${match.metadata.review}
+  //   Subject: ${match.metadata.subject}
+  //   Stars: ${match.metadata.stars}
+  //   \n\n
+  //   `;
+  // });
 
   const lastMsg = data[data.length - 1];
   const lastMsgContent = lastMsg.content + resultString;
@@ -97,7 +123,7 @@ export async function POST(req: Request) {
       ...lastDataWithoutLastMessage,
       { role: "user", content: lastMsgContent },
     ],
-    model: "gpt-4",
+    model: "gpt-3.5-turbo",
     stream: true,
   });
 
