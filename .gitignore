@@ -35,3 +35,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ignore data files
+professor-ratings.csv
+hacker_news_software_engineering_jobs.csv
+test.csv
+reviews.json

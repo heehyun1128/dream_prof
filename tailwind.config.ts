@@ -19,7 +19,7 @@ const config = {
     },
     extend: {
       colors: {
-        'primary': '#00013F',
+        'primary': '#400485',
         'white': '#FFFFFF',
       },
       backgroundColor: {

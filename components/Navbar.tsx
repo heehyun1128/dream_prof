@@ -13,7 +13,7 @@ const Navbar: React.FC = () => {
         className="text-charcoal-black flex items-center"
       >
         <Link href="/" className="text-2xl font-regular tracking-tight">
-          Garry
+          Dream Professor
         </Link>
       </motion.div>
       <motion.div 
@@ -41,20 +41,9 @@ const Navbar: React.FC = () => {
             }
           }}
         >
-          <Link href="#learn-more" className="font-medium text-charcoal-black hover:text-deep-orange transition-colors">
-            Learn More
-          </Link>
+       
         </motion.div>
-        {/* SignedOut and SignedIn components commented out
-        <SignedOut>
-          <Link href="/sign-in" passHref>
-            <Button variant="secondary">Log in / Sign up</Button>
-          </Link>
-        </SignedOut>
-        <SignedIn>
-          <UserButton afterSignOutUrl="/" />
-        </SignedIn>
-        */}
+     
       </motion.div>
     </header>
   );
