@@ -119,12 +119,12 @@ const Hero: React.FC = () => {
         </div>
       </motion.div>
       <div>
-        <div>
+        <div className="mt-4">
           <Button onClick={() => router.push("/rating-link")}>
             Submit a Professor Review Link
           </Button>
         </div>
-        <div>
+        <div className="mt-4 mb-4">
           <Button onClick={() => router.push("/view-review-trend")}>
             View a Professor&apos;s review Trend
           </Button>

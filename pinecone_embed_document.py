@@ -13,62 +13,80 @@ chunk_and_embed_routes = Blueprint('chunk_and_embed', __name__)
 # chunking
 async def chunk_and_embed_document():
     try:
-        csv_file = 'hacker_news_software_engineering_jobs.csv'
+        csv_file = 'professor-ratings.csv'
         processed_data = []
         with open(csv_file,mode='r',newline="",encoding="UTF-8") as file:
             reader=csv.DictReader(file)
+            prof_rating=""
             for row in reader:
-                title=row['Title']
-                url=row['URL']
+                
+                name=row['Name']
+                department=row['Department']
+                school=row['School']
+                rating=row['Rating']
+                numRatings=row['NumRatings']
+                difficulty=row['Difficulty']
+                wouldTakeAgain=row['WouldTakeAgain']
+                
+                prof_rating= f"""Professor name is {name}, in department {department}, school of {school},
+                professor rating is {rating}, total number of ratings received: {numRatings}, the professor's class difficulty is {difficulty},
+                and the rating of 'student would take again the course' is {wouldTakeAgain}
+                
+                """
                 
                 res = openai.embeddings.create(
-                    input=title,
+                    input=prof_rating,
                     model="text-embedding-3-small"
                 )
                 embedding = res.data[0].embedding
                 
                 processed_data.append({
                     "values": embedding,
-                    "id": url,
+                    "id": f"{name}_{department}_{school}_{rating}",
                     "metadata": {
-                        "title": title,
-                        "url":url
+                        "name": name,
+                        "department": department,
+                        "school": school,
+                        "rating": rating,
+                        "numRatings": numRatings,
+                        "difficulty": difficulty,
+                        "wouldTakeAgain": wouldTakeAgain
                     },
                 })
-                print("processed_data",processed_data)
+                print(processed_data)
                 pc = Pinecone(api_key=os.environ.get("PINECONE_API_KEY"))
                 index = pc.Index("rate-my-professor")
                 index.upsert(vectors=processed_data,namespace="ns1")
             
             
-        data=json.load(open("reviews.json"))
-        print(data)
+        # data=json.load(open("reviews.json"))
+        # print(data)
         
         
-        for review in data["reviews"]:
-            res=openai.embeddings.create( 
-                                         input=review['review'],
-                                         model="text-embedding-3-small"
-                )
-            embedding=res.data[0].embedding
-            processed_data.append({
-                "values":embedding,
-                "id":review["professor"],
-                "metadata": {
-                    "review": review["review"],
-                    "subject": review["subject"],
-                    "stars": review["stars"]},
-                    })
+        # for review in data["reviews"]:
+        #     res=openai.embeddings.create( 
+        #                                  input=review['review'],
+        #                                  model="text-embedding-3-small"
+        #         )
+        #     embedding=res.data[0].embedding
+        #     processed_data.append({
+        #         "values":embedding,
+        #         "id":review["professor"],
+        #         "metadata": {
+        #             "review": review["review"],
+        #             "subject": review["subject"],
+        #             "stars": review["stars"]},
+        #             })
 
-        print(processed_data[0])
+        # print(processed_data[0])
         
-        pc = Pinecone(api_key=os.environ.get("PINECONE_API_KEY"))
-        index = pc.Index("rate-my-professor")
+        # pc = Pinecone(api_key=os.environ.get("PINECONE_API_KEY"))
+        # index = pc.Index("rate-my-professor")
         
-        index.upsert(
-            vectors=processed_data,
-            namespace="ns2"
-        )
+        # index.upsert(
+        #     vectors=processed_data,
+        #     namespace="ns2"
+        # )
        
      
         

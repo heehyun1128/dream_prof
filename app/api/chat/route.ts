@@ -57,7 +57,7 @@ export async function POST(req: Request) {
   });
 
   const indexNames = ["ns1", "ns2"];
-  const indexQueries = indexNames.map(namespace => 
+  const indexQueries = indexNames.map((namespace) =>
     pc.index("rate-my-professor").namespace(namespace)
   );
 
@@ -76,30 +76,53 @@ export async function POST(req: Request) {
   //   includeMetadata: true,
   //   vector: embedding.data[0].embedding,
   // });
-  const results = await Promise.all(indexQueries.map(index => 
-    index.query({
-      topK: 3,
-      includeMetadata: true,
-      vector: embedding.data[0].embedding,
-    })
-  ));
+  const results = await Promise.all(
+    indexQueries.map((index) =>
+      index.query({
+        topK: 3,
+        includeMetadata: true,
+        vector: embedding.data[0].embedding,
+      })
+    )
+  );
 
   let resultString =
     "\n\nReturned results from vector db (done automatically):";
-  results.forEach((res,index) => {
-     res.matches.forEach((match) => {
-    if (!match.metadata) {
-      throw new Error("no metadata");
-    }
-    resultString += `\n
-    Professor: ${match.id}
-    Review: ${match.metadata.review}
-    Subject: ${match.metadata.subject}
-    Stars: ${match.metadata.stars}
-    \n\n
-    `;
+  results.forEach((res, index) => {
+    res.matches.forEach((match) => {
+      if (!match.metadata) {
+        throw new Error("no metadata");
+      }
+      if (match.metadata.review && match.metadata.subject && match.metadata.stars){
+        resultString += `\n
+        Professor: ${match.id}
+        Review: ${match.metadata.review}
+        Subject: ${match.metadata.subject}
+        Stars: ${match.metadata.stars}
+        \n\n
+        `;
+      }else{
+        resultString += `\n
+        Professor: ${match.metadata.name}
+        Review: The course difficulty is ${match.metadata.difficulty}, and the professor received ${match.metadata.numRatings}, and the chance of students will take again is ${match.metadata.wouldTakeAgain}
+        Subject: ${match.metadata.school} ${match.metadata.department}
+        Stars: ${match.metadata.rating}
+        \n\n
+        `;
+        
+      }
+
+//       department: "Civil Engineering department"
+// difficulty: "17%"
+// name: "Iris Tommelein"
+// numRatings: "8 ratings"
+// rating: "2.5"
+// school: "University of California Berkeley"
+// wouldTakeAgain: "3.1"
+      
+    });
   });
-  });
+  console.log(resultString)
   // results.matches.forEach((match) => {
   //   if (!match.metadata) {
   //     throw new Error("no metadata");

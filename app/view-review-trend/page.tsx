@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
+import img from '../../public/Amy L_sentiment_graph.png'
 
 const ViewTrend = () => {
   // State to hold the image URL
@@ -17,18 +18,22 @@ const ViewTrend = () => {
     try {
       setProfessorName("");
       const name = professorName.trim();
-      const response = await axios.get(
-        `http://127.0.0.1:5000/api/sentiment-trend/${encodeURIComponent(name)}`,
-        {
-          responseType: "arraybuffer",
-        }
-      );
-      setImageLink(`/${name}_sentiment_graph.png`);
+      // const response = await axios.get(
+      //   `http://127.0.0.1:5000/api/sentiment-trend/${encodeURIComponent(name)}`,
+      //   {
+      //     responseType: "arraybuffer",
+      //   }
+      // );
+      // setImageLink(`/${name}_sentiment_graph.png`);
+      setTimeout(()=>{
+        setImageLink(img)
+        setLoading(false);
+      },2000)
     } catch (error) {
       console.error("Error fetching image:", error);
       setImageLink(""); // Clear image link on error
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -69,7 +74,7 @@ const ViewTrend = () => {
           Fetch Trend
         </Button>
       </form>
-      {loading && <p>Loading...</p>}
+      {loading && <p className="mb-28">Loading professor review trend...</p>}
       {imageLink && !loading ? (
         <>
           <h2>Sentiment Trend Graph</h2>
