@@ -37,7 +37,7 @@ yarn-error.log*
 next-env.d.ts
 
 # ignore data files
-professor-ratings.csv
-hacker_news_software_engineering_jobs.csv
-test.csv
-reviews.json
+/professor-ratings.csv
+/hacker_news_software_engineering_jobs.csv
+/test.csv
+/reviews.json
