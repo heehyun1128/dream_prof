@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import img from '../../public/Amy L_sentiment_graph.png'
+import img from '../../public/AmyL_sentiment_graph.png'
 
 const ViewTrend = () => {
   // State to hold the image URL
@@ -11,20 +11,23 @@ const ViewTrend = () => {
   const [imageLink, setImageLink] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!professorName) return;
     setLoading(true);
     try {
       setProfessorName("");
       const name = professorName.trim();
-      // const response = await axios.get(
-      //   `http://127.0.0.1:5000/api/sentiment-trend/${encodeURIComponent(name)}`,
-      //   {
-      //     responseType: "arraybuffer",
-      //   }
-      // );
-      // setImageLink(`/${name}_sentiment_graph.png`);
+      const profName=name.split(" ").join("")
+      console.log(`http://127.0.0.1:5000/api/sentiment/${profName}`)
+      const response = await axios.get(
+        `http://127.0.0.1:5000/api/sentiment/${profName}`,
+        {
+          responseType: "arraybuffer",
+        }
+      );
+      console.log(response.data)
+      setImageLink(`/${name}_sentiment_graph.png`);
       setTimeout(()=>{
         setImageLink(img)
         setLoading(false);
@@ -38,14 +41,8 @@ const ViewTrend = () => {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
+    <div className="flex flex-col items-center justify-center min-h-screen">
+   
       <h1 style={{ fontSize: "30px" }}>Professor Review</h1>
       <form
         style={{

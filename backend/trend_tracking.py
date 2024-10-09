@@ -11,6 +11,7 @@ from datetime import datetime
 from flask import Blueprint, Response
 
 matplotlib.use('Agg')
+from urllib.parse import unquote
 
 sentiment_routes = Blueprint('sentiment', __name__)
 
@@ -38,7 +39,9 @@ def analyze_sentiment(transcription):
 
 def get_data_object():
     # csv_file = 'hacker_news_software_engineering_jobs.csv'
-    csv_file = 'test.csv'
+
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    csv_file = os.path.join(root_dir, 'test.csv')
     data_objects = []
     with open(csv_file, mode='r', newline='', encoding='utf-8') as file:
         reader = csv.DictReader(file)
@@ -91,19 +94,26 @@ def create_trend_graph(trends, professor_name):
     plot_graph.xticks(rotation=45)
     plot_graph.tight_layout()
     # timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    professor_name = professor_name.strip()
-    file_path = os.path.join('public', f'{professor_name}_sentiment_graph.png')
+    professor_name = professor_name.replace(" ", "")
+    print("professor_name",professor_name)
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    public_dir = os.path.join(root_dir, 'public')
+    os.makedirs(public_dir, exist_ok=True)
+    
+    file_path = os.path.join(public_dir, f'{professor_name}_sentiment_graph_01.png')
    
     plot_graph.savefig(file_path)
     plot_graph.close()
 
 
 # create_trend_graph(trend_over_time)
-@sentiment_routes.route('/sentiment-trend/<string:professor_name>',methods=['GET'])
+@sentiment_routes.route('/<professor_name>',methods=['GET'])
 def sentiment_trend_route(professor_name):
+    print("testtest",professor_name)
     reviews = get_data_object()
     trend_over_time = track_trends(reviews)
     img = create_trend_graph(trend_over_time, professor_name)
+    print("img",img)
     return Response(img, mimetype='image/png')
 
 if __name__ == "__main__":

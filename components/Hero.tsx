@@ -49,7 +49,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <main className="h-[60vh] container mx-auto px-4 sm:px-6 py-8 sm:py-16 text-center relative z-10 text-default">
+    <main className="h-[calc(100vh-64px)]  container mx-auto px-4 sm:px-6 py-8 sm:py-16 text-center relative z-10 text-default">
       <motion.h1
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -100,17 +100,19 @@ const Hero: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1}}
         transition={{ delay: 0.6, duration: 0.4 }}
-        className="mt-20 mr-12 flex justify-center"
+        className="mt-20 mr-12 min-h-[fit-content] mb-[40px]"
       >
+        <div  className="flex justify-center">
         <div className="mr-4">
-          <Button onClick={() => router.push("/rating-link")}>
+          <Button className="bg-black" onClick={() => router.push("/rating-link")}>
             Submit a Professor Review Link
           </Button>
         </div>
         <div className="mb-4">
-          <Button onClick={() => router.push("/view-review-trend")}>
+          <Button className="bg-black" onClick={() => router.push("/view-review-trend")}>
             View a Professor&apos;s review Trend
           </Button>
+        </div>
         </div>
         <AnimatePresence>
           {messages.map((chat, index) => (
@@ -127,7 +129,7 @@ const Hero: React.FC = () => {
               <motion.div
                 className={`p-3 rounded-2xl ${
                   chat?.role === "user"
-                    ? "bg-purple-500 text-white"
+                    ? "bg-purple-700 text-white"
                     : "bg-white shadow-purple-300"
                 } shadow-md max-w-[90%] break-words`}
               >

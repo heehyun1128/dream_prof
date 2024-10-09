@@ -13,8 +13,8 @@ const SubmitProfessorRatingLink: React.FC = () => {
     try {
       setLink("")
       setLoading(true)
-      const response = await axios.post("/api/scrape-ratings", { url:link });
-      // const response = await axios.post("/api/scraping", { url:link });
+      // const response = await axios.post("/api/scrape-ratings", { url:link });
+      const response = await axios.post("/api/scraping", { url:link });
       
     } catch (error) {
       console.error("Error submitting link:", error); 

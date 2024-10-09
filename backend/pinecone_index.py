@@ -10,11 +10,11 @@ load_dotenv()
 def create_index():
     pc = Pinecone(api_key=os.environ.get("PINECONE_API_KEY"))
 
-    index_name = "rate-my-professor"
+    index_name = os.environ.get("PINECONE_INDEX_NAME")
 
     if index_name not in pc.list_indexes().names():
         pc.create_index(
-            name="rate-my-professor",
+            name=index_name,
             dimension=1536, 
             metric="cosine", 
             spec=ServerlessSpec(

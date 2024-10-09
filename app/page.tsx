@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 export default function Home() {
 
   return (
-    <div className="bg-transparent text-default font-sans h-[70vh] overflow-hidden relative py-8">
+    <div className="bg-transparent text-default font-sans min-h-screen overflow-hidden relative py-8">
       <Hero />
      
     </div>

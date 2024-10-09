@@ -20,7 +20,6 @@ export async function POST(req: Request, res: NextResponse) {
     //   const url = 'https://news.ycombinator.com/jobs';
     const body = await req.json();
     const { url } = body;
-    console.log("url", url);
 
     const browser: Browser = await chromium.launch({ headless: true });
     const context = await browser.newContext();
@@ -42,8 +41,9 @@ export async function POST(req: Request, res: NextResponse) {
           '[class^="TeacherDepartment__StyledDepartmentLink"]'
         )?.textContent || "";
       const school =
-        document.querySelector('[class^="NameTitle__Title"] a[href*="/school/"]')?.textContent ||
-        "";
+        document.querySelector(
+          '[class^="NameTitle__Title"] a[href*="/school/"]'
+        )?.textContent || "";
       const rating =
         document.querySelector('[class^="RatingValue__Numerator"]')
           ?.textContent || "";
@@ -68,10 +68,13 @@ export async function POST(req: Request, res: NextResponse) {
       };
       return professorRating;
     });
-    console.log("professorDetails", professorDetails);
+    
     await browser.close();
-    const saveToFileName = path.resolve(process.cwd(), 'professor-ratings.csv');
-    saveToCsv(professorDetails,saveToFileName)
+    const saveToFileName = path.resolve(process.cwd(), "professor-ratings.csv");
+    saveToCsv(professorDetails, saveToFileName);
+
+    // auto-embed scraped data
+    await axios.get(`${process.env.BACKEND_URL}/api/auto-embedding`);
 
     return NextResponse.json(
       { message: "Jobs fetched and saved successfully" },
@@ -108,12 +111,9 @@ async function saveToCsv(
     append: fs.existsSync(fileName),
   });
 
- 
-
   try {
     await csvWriter.writeRecords([rating]);
     console.log(`Data saved to ${fileName}.`);
-    await axios.get(`${process.env.BACKEND_URL}/api/auto-embedding`);
   } catch (err) {
     console.error("Error writing to CSV file:", err);
     throw err;

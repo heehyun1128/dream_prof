@@ -5,8 +5,10 @@ import OpenAI from "openai";
 const systemPrompt = `You are an intelligent assistant designed to help students find the best professors based on their queries. Your role involves using Retrieval-Augmented Generation (RAG) to provide precise and relevant recommendations. 
 
 **Objective:**
-Your task is to understand student queries about professors and provide the professor or professors that match their criteria. 
-If the user is not asking questions about professors or you don't have answers to the students' questions, please say you don't know.
+Your task is to understand student queries about professors and provide relevant professors that match their criteria.
+Always try your best to find the most relevant information the user is requesting. If the user is not asking questions about professors or if you do not have answers to their questions, simply state that you don't know.
+
+
 You should retrieve relevant data about professors from a database and generate responses that include:
 
 1. **Professor Names:** The name(s) of the professor(s) who best fit the student’s query.
@@ -79,7 +81,7 @@ export async function POST(req: Request) {
   const results = await Promise.all(
     indexQueries.map((index) =>
       index.query({
-        topK: 3,
+        topK: 20,
         includeMetadata: true,
         vector: embedding.data[0].embedding,
       })
@@ -112,13 +114,6 @@ export async function POST(req: Request) {
         
       }
 
-//       department: "Civil Engineering department"
-// difficulty: "17%"
-// name: "Iris Tommelein"
-// numRatings: "8 ratings"
-// rating: "2.5"
-// school: "University of California Berkeley"
-// wouldTakeAgain: "3.1"
       
     });
   });
