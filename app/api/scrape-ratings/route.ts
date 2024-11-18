@@ -74,7 +74,8 @@ export async function POST(req: Request, res: NextResponse) {
     saveToCsv(professorDetails, saveToFileName);
 
     // auto-embed scraped data
-    await axios.get(`${process.env.BACKEND_URL}/api/auto-embedding`);
+    await axios.get(`/api/auto-embedding`);
+    // await axios.get(`${process.env.BACKEND_URL}/api/auto-embedding`);
 
     return NextResponse.json(
       { message: "Jobs fetched and saved successfully" },
