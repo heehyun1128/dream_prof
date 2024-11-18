@@ -31,7 +31,8 @@ console.log("url",url)
     const jobs = await fetchHackerNewsData(url);
     const fileName = path.resolve(process.cwd(), 'hacker_news_software_engineering_jobs.csv');
     await saveToCsv(jobs, fileName);
-    await axios.get(`${process.env.BACKEND_URL}/api/auto-embedding`)
+    await axios.get(`/api/auto-embedding`)
+    // await axios.get(`${process.env.BACKEND_URL}/api/auto-embedding`)
     return NextResponse.json({ message: 'Jobs fetched and saved successfully', fileName },{status:200})
 } catch (error) {
     console.error('Error fetching Hacker News jobs:', error);
