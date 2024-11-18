@@ -8,7 +8,7 @@ import img from '../../public/AmyL_sentiment_graph.png'
 const ViewTrend = () => {
   // State to hold the image URL
   const [professorName, setProfessorName] = useState<string>("");
-  const [imageLink, setImageLink] = useState<string>("");
+  const [imageLink, setImageLink] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
