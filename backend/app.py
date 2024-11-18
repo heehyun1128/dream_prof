@@ -10,7 +10,8 @@ CORS(app, origins=["http://localhost:3000"])
 app.register_blueprint(sentiment_routes,url_prefix='/api')
 app.register_blueprint(chunk_and_embed_routes,url_prefix='/api')
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
     
 
