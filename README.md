@@ -21,6 +21,9 @@ This project allows users to search for professor ratings, view sentiment trends
 - **Data Visualization:**
   - matplotlib (for sentiment graph generations)
 
+# Legal
+All rights reserved. You may not use, distribute, or reproduce any part of this repository without the owner's explicit written permission.
+You must notify the owner before using this repository in any way.
 
 # Getting Started
 
